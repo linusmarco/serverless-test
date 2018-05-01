@@ -1,0 +1,55 @@
+service: test-site
+
+frameworkVersion: "=1.26.0"
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  stage: dev
+  region: us-east-1
+  profile: serverless-admin
+
+# functions:
+#   hello:
+#     handler: handler.hello
+
+plugins:
+  - serverless-finch
+
+custom:
+  client:
+    bucketName: serverless-test-site-us-east-1
+    distributionFolder: client/dist # (Optional) The location of your website. This defaults to client/dist
+    objectHeaders:
+      error.html:
+        - name: Cache-Control
+          value: no-cache
+        - name: Content-Language
+          value: es-ES
+      blah/:
+        - name: Cache-Control
+          value: max-age=10000
+      ALL_OBJECTS:
+        - name: Content-Language
+          value: en-US
+
+    indexDocument: index.html
+    errorDocument: error.html
+    # redirectAllRequestsTo: 
+    #   hostName: www.google.com
+    #   protocol: https
+    routingRules:
+      - redirect: 
+          hostName: f7ckpwoem8.execute-api.us-east-1.amazonaws.com
+          httpRedirectCode: 301
+          protocol: https
+          replaceKeyPrefixWith: production/
+        condition:
+          keyPrefixEquals: apiv/
+      - redirect: 
+          hostName: www.linusmarco.com
+          httpRedirectCode: 302
+          protocol: https
+          replaceKeyPrefixWith: "#/"
+        condition:
+          httpErrorCodeReturnedEquals: 404
